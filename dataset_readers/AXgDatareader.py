@@ -31,10 +31,10 @@ logger = logging.getLogger(__name__)
 
 TRAIN_VAL_SPLIT_RATIO = 0.9
 
-@DatasetReader.register("wsc")
-class WscDatasetReader(DatasetReader):
-    TAR_URL = 'https://dl.fbaipublicfiles.com/glue/superglue/data/v2/WSC.zip'
-    DIR = "WSC"
+@DatasetReader.register("axg")
+class AxgDatasetReader(DatasetReader):
+    TAR_URL = 'https://dl.fbaipublicfiles.com/glue/superglue/data/v2/AX-g.zip'
+    DIR = "AX-g"
 
 
     def __init__(self,
@@ -56,27 +56,34 @@ class WscDatasetReader(DatasetReader):
             tf.extractall(cache_dir)
 
         if file_path == 'train':
-            path = str(Path(cache_dir)) + "/WSC/train.jsonl"
+            path = str(Path(cache_dir)) + "/AX-g/AX-g.jsonl"
+            with open(path, 'r') as json_file:
+                json_list = list(json_file)
         # elif file_path == 'test':
         #     path = str(Path(cache_dir)) + "/WSC/test.jsonl"
         elif file_path == 'dev':
-            path = str(Path(cache_dir)) + "/WSC/val.jsonl"
+            path = str(Path(cache_dir)) + "/AX-g/AX-g.jsonl"
+            with open(path, 'r') as json_file:
+                json_list = list(json_file)
         else:
             raise ValueError(f"only 'train', 'dev', and 'test' are valid for 'file_path', but '{file_path}' is given.")
-        with open(path, 'r') as json_file:
-            json_list = list(json_file)
+        
+        if file_path == 'train':
+            json_list = json_list[:int(len(json_list) * TRAIN_VAL_SPLIT_RATIO)]
+        else:
+            json_list = json_list[int(len(json_list) * TRAIN_VAL_SPLIT_RATIO):]
 
         for json_str in json_list:
             item = json.loads(json_str)
-            options = item['target']["span1_text"] + " , " + item['target']["span2_text"]
-            yield self.text_to_instance(item['text'], options, str(item['label']))
+            yield self.text_to_instance(item['hypothesis'], item["premise"], item['label'])
 
     def text_to_instance(
             self, text: str, options:str, label:str = None) -> Optional[Instance]:
         REPLACE_WITH_SPACE = re.compile("\n\t")
         text = REPLACE_WITH_SPACE.sub(" ", text)
-        text_tokens = self._tokenizer.tokenize(text)[:448]
-        option_tokens = self._tokenizer.tokenize(options)[:60]
+        options = REPLACE_WITH_SPACE.sub(" ", options)
+        text_tokens = self._tokenizer.tokenize(text)[:256]
+        option_tokens = self._tokenizer.tokenize(options)[:256]
         tokens = self._tokenizer.add_special_tokens(text_tokens, option_tokens)
         text_field = TextField(tokens, token_indexers=self._token_indexers)
         fields: Dict[str, Field] = {"tokens": text_field}
@@ -84,7 +91,7 @@ class WscDatasetReader(DatasetReader):
             fields["label"] = LabelField(label)
         return Instance(fields)
 
-# reader = WscDatasetReader()
-# dataset = list(reader.read('dev'))
+# reader = AxgDatasetReader()
+# dataset = list(reader.read('train'))
 # pdb.set_trace()
 # print("type of its first element: ", type(dataset[0]))

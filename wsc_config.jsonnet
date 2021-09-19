@@ -1,5 +1,3 @@
-
-local transformer_model = "roberta-base";
 {
     "dataset_reader": {
         "type": "wsc",
@@ -7,13 +5,13 @@ local transformer_model = "roberta-base";
             "tokens": {
                 "type": "pretrained_transformer",
                 "max_length": 512,
-                "model_name": transformer_model
+                "model_name": "roberta-base"
             }
         },
         "tokenizer": {
             "type": "pretrained_transformer",
             "max_length": 512,
-            "model_name": transformer_model
+            "model_name": "roberta-base"
         }
     },
     "model": {
@@ -22,35 +20,35 @@ local transformer_model = "roberta-base";
         "seq2vec_encoder": {
             "type": "bert_pooler",
             "dropout": 0.1,
-            "pretrained_model": transformer_model
+            "pretrained_model": "roberta-base"
         },
         "text_field_embedder": {
             "token_embedders": {
                 "tokens": {
                     "type": "pretrained_transformer",
                     "max_length": 512,
-                    "model_name": transformer_model
+                    "model_name": "roberta-base"
                 }
             }
         }
     },
     // "model": {
     //     "type": "transformer_classification_tt",
-    //     "transformer_model": transformer_model,
+    //     "transformer_model": "roberta-base",
     //   },
     "train_data_path": "train",
     "test_data_path": "dev",
     "trainer": {
-        "num_epochs": 4,
-        "validation_metric": "+accuracy",
+        "num_epochs": 6,
 	 "learning_rate_scheduler": {
-	    "type": "slanted_triangular",
-	    "cut_frac": 0.06		
+	    // "type": "slanted_triangular",
+	    // "cut_frac": 0.06		
+        "type": "polynomial_decay"
 	},
         "optimizer": {
             "type": "huggingface_adamw",
-            "lr": 2e-05,
-            "weight_decay": 0.1
+            "lr": 2e-05
+            // "weight_decay": 0.1
         },
         "callbacks": [
             {

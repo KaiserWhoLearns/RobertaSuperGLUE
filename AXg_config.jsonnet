@@ -1,6 +1,6 @@
 {
     "dataset_reader": {
-        "type": "imdb2",
+        "type": "axg",
         "token_indexers": {
             "tokens": {
                 "type": "pretrained_transformer",
@@ -37,9 +37,9 @@
     //     "transformer_model": "roberta-base",
     //   },
     "train_data_path": "train",
-    "test_data_path": "test",
+    "test_data_path": "dev",
     "trainer": {
-        "num_epochs": 1,
+        "num_epochs": 6,
 	 "learning_rate_scheduler": {
 	    "type": "slanted_triangular",
 	    "cut_frac": 0.06		
